@@ -259,3 +259,11 @@ func Body() echo.MiddlewareFunc {
 		}
 	}
 }
+
+func (w *bodyDumpResponseWriter) WriteHeader(code int) {
+	w.ResponseWriter.WriteHeader(code)
+}
+
+func (w *bodyDumpResponseWriter) Write(b []byte) (int, error) {
+	return w.Writer.Write(b)
+}
