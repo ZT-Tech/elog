@@ -209,7 +209,7 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 					}
 					return buf.WriteString(cl)
 				case "response":
-					return buf.WriteString(string(resBody))
+					return buf.WriteString(string(resBody.Bytes()))
 				case "bytes_out":
 					return buf.WriteString(strconv.FormatInt(res.Size, 10))
 				default:
