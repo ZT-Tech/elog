@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -67,6 +68,11 @@ type (
 		colorer  *color.Color
 		pool     *sync.Pool
 	}
+
+	bodyDumpResponseWriter struct {
+		io.Writer
+		http.ResponseWriter
+	}
 )
 
 var (
@@ -125,7 +131,9 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 
 			// Response
 			resBody := new(bytes.Buffer)
-			_ = io.MultiWriter(c.Response().Writer, resBody)
+			mw := io.MultiWriter(c.Response().Writer, resBody)
+			writer := &bodyDumpResponseWriter{Writer: mw, ResponseWriter: c.Response().Writer}
+			c.Response().Writer = writer
 
 			start := time.Now()
 			if err = next(c); err != nil {
