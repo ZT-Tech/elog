@@ -117,9 +117,15 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 			req := c.Request()
 			res := c.Response()
 
-			bodyBytes, _ := ioutil.ReadAll(c.Request().Body)
-			// Restore the io.ReadCloser to its original state
-			c.Request().Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
+			reqBody := []byte{}
+			if c.Request().Body != nil { // Read
+				reqBody, _ = ioutil.ReadAll(c.Request().Body)
+			}
+			c.Request().Body = ioutil.NopCloser(bytes.NewBuffer(reqBody)) // Reset
+
+			// Response
+			resBody := new(bytes.Buffer)
+			_ = io.MultiWriter(c.Response().Writer, resBody)
 
 			start := time.Now()
 			if err = next(c); err != nil {
@@ -195,7 +201,7 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 				case "latency_human":
 					return buf.WriteString(stop.Sub(start).String())
 				case "body":
-					return buf.WriteString(string(bodyBytes))
+					return buf.WriteString(string(reqBody))
 				case "bytes_in":
 					cl := req.Header.Get(echo.HeaderContentLength)
 					if cl == "" {
@@ -203,6 +209,7 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 					}
 					return buf.WriteString(cl)
 				case "response":
+					return buf.WriteString(string(resBody))
 				case "bytes_out":
 					return buf.WriteString(strconv.FormatInt(res.Size, 10))
 				default:
