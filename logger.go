@@ -209,7 +209,7 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 				case "latency_human":
 					return buf.WriteString(stop.Sub(start).String())
 				case "body":
-					return buf.WriteString(string(reqBody))
+					return buf.Write(reqBody)
 				case "bytes_in":
 					cl := req.Header.Get(echo.HeaderContentLength)
 					if cl == "" {
@@ -217,7 +217,7 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 					}
 					return buf.WriteString(cl)
 				case "response":
-					return buf.WriteString(string(resBody.Bytes()))
+					return buf.Write(resBody.Bytes())
 				case "bytes_out":
 					return buf.WriteString(strconv.FormatInt(res.Size, 10))
 				default:
