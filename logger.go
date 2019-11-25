@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -143,7 +144,7 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 			buf := config.pool.Get().(*bytes.Buffer)
 			buf.Reset()
 			defer config.pool.Put(buf)
-
+			re := regexp.MustCompile("\n *")
 			if _, err = config.template.ExecuteFunc(buf, func(w io.Writer, tag string) (int, error) {
 				switch tag {
 				case "time_unix":
@@ -209,7 +210,7 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 				case "latency_human":
 					return buf.WriteString(stop.Sub(start).String())
 				case "body":
-					return buf.WriteString(strings.TrimSpace(string(reqBody)))
+					return buf.WriteString(re.ReplaceAllString(string(reqBody), ""))
 				case "bytes_in":
 					cl := req.Header.Get(echo.HeaderContentLength)
 					if cl == "" {
@@ -217,7 +218,7 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 					}
 					return buf.WriteString(cl)
 				case "response":
-					return buf.WriteString(strings.TrimSpace(string(resBody.Bytes())))
+					return buf.WriteString(re.ReplaceAllString(string(resBody.Bytes()), ""))
 				case "bytes_out":
 					return buf.WriteString(strconv.FormatInt(res.Size, 10))
 				default:
