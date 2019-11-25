@@ -1,4 +1,4 @@
-module elog
+module github.com/ZT-Tech/elog
 
 go 1.13
 
