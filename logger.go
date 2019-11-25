@@ -209,7 +209,7 @@ func LoggerWithConfig(config LoggerConfig) echo.MiddlewareFunc {
 				case "latency_human":
 					return buf.WriteString(stop.Sub(start).String())
 				case "body":
-					return buf.WriteString(strings.TrimSpace(string(reqBody.Bytes())))
+					return buf.WriteString(strings.TrimSpace(string(reqBody))
 				case "bytes_in":
 					cl := req.Header.Get(echo.HeaderContentLength)
 					if cl == "" {
